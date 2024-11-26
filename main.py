@@ -7,17 +7,19 @@ rations = 5
 health = 100
 objective = 0
 insanity = 0
+survived_encounters = 0
 
 def calculate_stats():
-    global hunger, thirst, objective, insanity
+    global hunger, thirst, objective, insanity, survived_encounters
     hunger -= 10
     thirst -= 15
     objective += 1
     insanity += 1
+    survived_encounters += 1
 
 def handle_events():
     global hunger, thirst, health, objective, insanity, rations
-    event = random.randint(1, 7)
+    event = random.randint(1, 8)
     if event == 1: # Berry Bush Encounter
         print('You come across a bush of berries.')
         while True:
@@ -83,8 +85,9 @@ def handle_events():
         while True:
             response = input('Do you investigate the cottage? (yes/no)').lower()
             if response == 'yes':
-                if insanity > 5:
+                if insanity > 15:
                     rations += 2
+                    objective -= 1
                     print('You search the cottage and find various supplies, increasing your rations but taking some time.')
                     break
                 else:
@@ -92,7 +95,6 @@ def handle_events():
                     print('You search the cabin only to find nothing but blood stained floorboards and half eaten rotting food.')
                     break
             elif response == 'no':
-                objective += 1
                 print('You press on, no need to waste time.')
                 break
             else:
@@ -102,7 +104,7 @@ def handle_events():
         while True:
             response = input('Should you try to cross it or turn around? (cross/turn around)').lower()
             if response == 'cross':
-                outcome == random.randint(1, 2)
+                outcome = random.randint(1, 2)
                 if outcome == 1:
                     print('You successfully make it across the river.')
                     break
@@ -162,6 +164,51 @@ def handle_events():
                 break
             else:
                 print('Invalid response. Please type "yes" or "no"')
+    elif event == 8: # Rustling Bushes Encounter
+        print('You hear rustling in some nearby bushes.')
+        while True:
+            response = input('Should you investigate the bushes? (yes/no)').lower()
+            if response == 'yes':
+                if insanity > 20:
+                    outcome = random.randint(1, 9)
+                    if outcome in [1, 6]: # Animal in the bush
+                        print('You come across a small animal.')
+                        response = input('Should you cook and eat it? (yes/no)')
+                        if response == 'yes':
+                            outcome = random.randint(1, 2)
+                            if outcome == 1: 
+                                hunger += 25
+                                print('You eat the animal and regain some hunger.')
+                                break
+                            elif outcome == 2:
+                                hunger += 25
+                                health -= 15
+                                print('You eat the animal but get sick from it not being prepared properly.')
+                                break
+                        elif response == 'no':
+                            print('You move on.')
+                            break
+                        else:
+                            print('Invalid response. Please type "yes" or "no"')
+                    elif outcome in [7, 8]: # Gnome in the bush
+                        insanity -= 6
+                        print('You find a small gnome in the bush, you are unsure if it is even real but it oddly fills you with determination to see this through.')
+                    elif outcome == 9: # Eli in the bush
+                        hunger += 50
+                        thirst += 50
+                        insanity -= 6
+                        print('You reach your hand out to see what is inside of the bush, out of nowhere a blonde haired man steps out. He says "Hey its me, Eli! I finally found you! I have been looking to try to give you this record, give it a listen!" He hands you a large record case, the front reads "OK Computer". Curious isnt it. He then winks and exclaims "Catch you later!", laughs, and runs off. You strangely feel much better.')
+                        break
+                else: # Wendigo in the bush
+                    health -= 1000
+                    print('When you reach out your hand to investigate the bushes, a sense of pure terror and dread overwhelmes you when you touch an antler. From the bush emerges an otherworldy hulking beast. It has a vaguely humanoid appearance, completely unnaturally slouched over, it ressembles a deer more than anything. Its head however has no skin at all, it is a bare skull, stained with blood. As you run for your life there is nothing you can do as its almost like it can predit your every mo-')
+                    break
+            elif response == 'no':
+                insanity += 1
+                print('You continue walking, a little paranoid.')
+                break
+            else:
+                print('Invalid response. Please type "yes" or "no"')
 
 print('You are lost in a forest alone, you have basic supplies with you but nothing else. Your only objective is to find your way home and stay alive.')
 
@@ -192,7 +239,7 @@ while response != 'quit':
 
     # Check if the player is still alive
     if hunger <= 0 or thirst <= 0 or health <= 0:
-        print('You succumb to the harsh forest conditions...')
+        print(f'You succumb to the harsh forest conditions... You survived {survived_encounters} encounters!')
         break
     # Check if the player has won
     if objective == 15:
