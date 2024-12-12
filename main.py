@@ -4,6 +4,7 @@ import random
 hunger = 100
 thirst = 100
 rations = 5
+first_aid_kits = 3
 health = 100
 objective = 0
 insanity = 0
@@ -90,12 +91,13 @@ def deer_event():
         print('You decide to let the deer go and move on peacefully.')
 
 def abandoned_cottage_event():
-    global hunger, thirst, health, objective, insanity, rations, guide, shotgun, time_until_cleared
+    global hunger, thirst, health, objective, insanity, rations, guide, shotgun, time_until_cleared, first_aid_kits
     print('You come across an old abandoned cottage.')
     response = get_user_input('Do you investigate the cottage? (yes/no): ', ['yes', 'no'])
     if response == 'yes':
         outcome = random.randint(1, 5)
         if outcome in [1, 4]:
+            first_aid_kits += 1
             rations += 3
             objective -= 1
             print('You search the cottage and find various supplies, increasing your rations but taking some time.')
@@ -243,13 +245,28 @@ def old_man_event():
 
 def shotgun_event():
     global hunger, thirst, health, objective, insanity, rations, guide, shotgun, time_until_cleared
-    print('You find a loaded shotgun on the ground and put it in your backpack, while weary of why this might be here you pick it up as it could come in handy later.')
-    shotgun = True
+    if shotgun != True:
+        print('You find a loaded shotgun on the ground and put it in your backpack, while weary of why this might be here you pick it up as it could come in handy later.')
+        shotgun = True
+    else:
+        print('You find a loaded shotgun on the ground however you already have one so you leave this one as you cannot carry more than one.')
 
 def wendigo_event():
     global hunger, thirst, health, objective, insanity, rations, guide, shotgun, time_until_cleared
-    health -= 1000
-    print('You are beginning to go crazy, this forest is not what it seems. As you continue walking you see multiple deer carcases with their insides carved out on your path. It looks unnatural, no predator should be able to naturally do this. Thats when you hear rustling behind you. You turn around just to see a hulking creature, its appearance is almost half human half deer, just a lot larger than either creature. A sense of complete dread washes over you. The creature lunges at you and its blood soaked antlers stab into you, killing you instantly.')
+    print('You are beginning to go crazy, this forest is not what it seems. As you continue walking you see multiple deer carcases with their insides carved out on your path. It looks unnatural, no predator should be able to naturally do this. Thats when you hear rustling behind you. You turn around just to see a hulking creature, its appearance is almost half human half deer, just a lot larger than either creature. A sense of complete dread washes over you.')
+    if shotgun:
+        response = get_user_input('The hulking beast charges at you! Do you use the shotgun? (yes/no):', ['yes', 'no'])
+        if response == 'yes':
+            health -= 50  # Survive but take damage
+            insanity -= 5
+            shotgun = False
+            print('You fire the shotgun, injuring the beast, but it grazes you before fleeing. However now your shotgun is out of ammo.')
+        else:
+            health -= 1000
+            print('You freeze in terror as the beast drives its blood soaked antlers into you, killing you instantly.')
+    else:
+        health -= 1000
+        print('The creature lunges at you, its blood soaked antlers stabbing into you, killing you instantly. ')
 
 def handle_events():
     global hunger, thirst, health, insanity
@@ -273,9 +290,9 @@ print('You are lost in a forest alone, unsure of how you got here. you have basi
 # game loop
 response = ""
 while response != 'quit':
-    current_situation = f'This is your current Situation: Hunger: {hunger}, Thirst: {thirst}, Rations: {rations}, Health: {health}, Objective: {objective}, Insanity: {insanity}'
+    current_situation = f'This is your current Situation: Hunger: {hunger}, Thirst: {thirst}, Health: {health}, Rations: {rations}, First Aid Kits: {first_aid_kits}, Objective: {objective}, Insanity: {insanity}'
     print(current_situation)
-    response = input('What should you do? (advance, consume rations, quit): ').lower()
+    response = input('What should you do? (advance, consume rations, use first aid kit, quit): ').lower()
     if response == 'advance':
         handle_events()
         calculate_stats()
@@ -290,6 +307,15 @@ while response != 'quit':
                 print('You are already full!')
         else:
             print('You have no rations left!')
+    elif response == 'use first aid kit':
+        if first_aid_kits > 0:
+            if health <= 75:
+                health += 15
+                print('You use a first aid kit and heal your wounds.')
+            else:
+                print('You are not injured severely enough to do anything.')
+        else:
+            print('You have no first aid kits left!')
     elif response == 'quit':
         print('You quit the game. Goodbye!')
     else:
